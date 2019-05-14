@@ -1,0 +1,6 @@
+logs/
+models/
+.vscode/
+.env/
+__pycache__/
+data/
