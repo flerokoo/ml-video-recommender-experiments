@@ -64,7 +64,7 @@ def slide_window_over_file(input_file_name, output_file_name, verbalize=True):
 
 
 if __name__ == "__main__":
-    slide_window_over_file("data/sequences.csv", "data/sliding_sequences.csv")
+    slide_window_over_file("data/sequences_1000.csv", "data/sliding_sequences_1000.csv")
 
 # all_sequences = pickle.load(open("data/raw_video_sequences.pickle", "rb"))
 # sequences = list(filter(lambda a: len(a["sequence"]) > MIN_SEQ_LEN, all_sequences))

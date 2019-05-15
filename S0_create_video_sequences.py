@@ -1,13 +1,27 @@
 import pandas as pd
 import pickle
 import os
+import math
 from options import MAX_TIMESTAMP_DIFFERENCE
 
 def generate_sequences(row, min_len=2):
+    if row["Watched videos"] == "nan":
+        print(row)
+        print(row["Watched videos"])
+        return []
+
     user_id = row["ID"]
-    favorites, watched_raw = row["Favorites"], row["Watched videos"].split(",")
-    watched_vids_ids = list(map(lambda a: int(a), watched_raw[0::2]))
-    watched_vids_timestamps = list(map(lambda a: int(a), watched_raw[1::2]))
+    favorites, watched_raw = row["Favorites"], row["Watched videos"].split(',')
+
+    # try:
+    watched_vids_ids = list(map(int, watched_raw[0::2]))
+    watched_vids_timestamps = list(map(int, watched_raw[1::2]))
+    # except:
+    #     print(type(row["Watched videos"]))
+    #     print(row["Watched videos"])
+    #     print(watched_raw)
+    # finally:
+    #     return []       
 
     prev_timestamp = 0;        
     current_sequence = []
@@ -38,9 +52,16 @@ def generate_sequences_from_file(source, target, verbalize=True):
         
     file = open(target, "a", newline='')
 
+    col_types = {
+        "Watched videos": str,
+        "Favorites": str,
+        "ID": str
+    }
+
     is_first_row = True
     num_of_seqs = 0
     for chunk in pd.read_csv(source, chunksize=100000):
+        chunk["Watched videos"] = chunk["Watched videos"].astype(str)
         for index, row in chunk.iterrows():
             seqs = generate_sequences(row)
             for seq in seqs:
@@ -60,7 +81,7 @@ if __name__ == "__main__":
     # output: csv
     # user_id, sequence
     # xxx, "1,2,3"
-    generate_sequences_from_file("data/raw/ml_users.csv", "data/sequences.csv")
+    generate_sequences_from_file("data/raw/ml_users_1000.csv", "data/sequences_1000.csv")
 
 # users = pd.read_csv("data/raw/ml_users.csv")
 # sequences = generate_sequences(users)
