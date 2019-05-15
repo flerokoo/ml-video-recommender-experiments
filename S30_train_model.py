@@ -1,4 +1,3 @@
-import pickle
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Activation, \
     Flatten, Input, Masking, LSTM, CuDNNLSTM, Embedding, GRU, CuDNNGRU
@@ -50,7 +49,8 @@ def get_generators(input_file_name, validation_split=0.05, per_step=100):
             for index, row in df.iterrows():      
                 sequence = list(map(int, row[PADDED_SEQUENCE_COL_INDEX].split(",")))
                 answer = int(row[ANSWER_COL_INDEX])
-                sequences.append(to_categorical(sequence, CLASSES))        
+                # sequences.append(to_categorical(sequence, CLASSES))        
+                sequences.append(sequence)
                 answers.append([answer])
 
             yield (
@@ -72,16 +72,20 @@ def get_generators(input_file_name, validation_split=0.05, per_step=100):
 def get_model():
     inp_shape = (options.DEFAULT_SEQ_LEN, CLASSES)
     model = Sequential()
-    model.add(CuDNNLSTM(800, return_sequences=True, input_shape=inp_shape))
-    model.add(CuDNNLSTM(600, return_sequences=True)) 
-    model.add(CuDNNLSTM(400, return_sequences=True)) 
-    model.add(CuDNNLSTM(600, return_sequences=False)) # replace to False and remove Flatten
+    model.add(Embedding(CLASSES + 1,
+        64,
+        mask_zero=True,
+        input_length=options.DEFAULT_SEQ_LEN))
+    model.add(LSTM(512, return_sequences=True))
+    model.add(LSTM(256, return_sequences=True)) 
+    # model.add(LSTM(64, return_sequences=True)) 
+    model.add(LSTM(256, return_sequences=False)) # replace to False and remove Flatten
     model.add(Dropout(0.05))
     # model.add(Flatten())
     model.add(Dense(CLASSES))
     model.add(Activation("softmax"))
     model.compile(loss="sparse_categorical_crossentropy",
-        optimizer="adam",
+        optimizer="nadam",
         metrics=["accuracy"])
     return model
 
@@ -89,8 +93,8 @@ def get_model():
 
 if __name__ == "__main__":
     
-    batch_size = 1000
-    train_gen, valid_gen, train_steps, valid_steps = get_generators("data/sliding_sequences_1000.csv", per_step=batch_size)
+    batch_size = 250
+    train_gen, valid_gen, train_steps, valid_steps = get_generators("data/shuffled_sliding_1000.csv", per_step=batch_size)
 
     timestamp = time.ctime(time.time()).replace(" ", "_").replace(":", "-")
 
@@ -112,7 +116,7 @@ if __name__ == "__main__":
         steps_per_epoch=train_steps,
         validation_data=valid_gen,
         validation_steps=valid_steps,
-        epochs=20,
+        epochs=250,
         # callbacks=[tensorboard, checkpoint]
         )    
 

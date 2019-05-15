@@ -2,7 +2,7 @@ import pandas as pd
 import pickle
 import os
 import math
-from options import MAX_TIMESTAMP_DIFFERENCE
+from options import MAX_TIMESTAMP_DIFFERENCE, MIN_SEQ_LEN
 
 def generate_sequences(row, min_len=2):
     if row["Watched videos"] == "nan":

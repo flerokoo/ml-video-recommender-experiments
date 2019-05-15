@@ -11,3 +11,4 @@
 попробовать ембеддинг
 gpu
 представить айди видео как два числа 0<=a,b<=1: id = 10000*a + 100*b
+разные optimizerы, weight initializerы, regularizerы
